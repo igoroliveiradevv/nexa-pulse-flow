@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  Plus, 
   Search, 
   MoreHorizontal, 
   Phone, 
@@ -13,6 +12,7 @@ import {
   Calendar
 } from "lucide-react";
 import { useState } from "react";
+import { NewClientDrawer } from "./NewClientDrawer";
 
 interface Client {
   id: string;
@@ -106,10 +106,7 @@ export const ClientList = () => {
           <h2 className="text-2xl font-semibold text-foreground">CRM de Clientes</h2>
           <p className="text-muted-foreground">Gerencie leads, prospects e clientes</p>
         </div>
-        <Button className="bg-primary hover:bg-primary-hover">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Cliente
-        </Button>
+        <NewClientDrawer onAdd={(client) => setClients(prev => [...prev, client])} />
       </div>
 
       <div className="mb-6">
