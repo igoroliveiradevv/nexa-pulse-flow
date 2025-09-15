@@ -9,8 +9,18 @@ import {
   Mail, 
   Building,
   DollarSign,
-  Calendar
+  Calendar,
+  Edit2,
+  Trash2,
+  Copy
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { NewClientDrawer } from "./NewClientDrawer";
 
@@ -26,51 +36,7 @@ interface Client {
   nextContact?: string;
 }
 
-const mockClients: Client[] = [
-  {
-    id: "1",
-    name: "CMYK Impressão Digital",
-    company: "CMYK IMPRESSÃO DIGITAL LTDA",
-    email: "contato@cmyk.com.br",
-    phone: "(62) 99999-9999",
-    status: "client",
-    value: 1700,
-    lastContact: "2025-01-03",
-    nextContact: "2025-02-03"
-  },
-  {
-    id: "2",
-    name: "João Silva",
-    company: "Empresa ABC Ltda",
-    email: "joao@empresaabc.com",
-    phone: "(11) 98888-8888",
-    status: "prospect",
-    value: 2500,
-    lastContact: "2024-12-15",
-    nextContact: "2025-01-15"
-  },
-  {
-    id: "3",
-    name: "Maria Santos",
-    company: "Tech Solutions",
-    email: "maria@techsolutions.com",
-    phone: "(21) 97777-7777",
-    status: "lead",
-    value: 1200,
-    lastContact: "2024-12-20",
-  },
-  {
-    id: "4",
-    name: "Carlos Oliveira",
-    company: "Inovação Digital",
-    email: "carlos@inovacao.com",
-    phone: "(85) 96666-6666",
-    status: "client",
-    value: 3000,
-    lastContact: "2024-12-28",
-    nextContact: "2025-01-28"
-  }
-];
+const initialClients: Client[] = [];
 
 const statusLabels = {
   lead: "Lead",
@@ -90,14 +56,41 @@ const getStatusColor = (status: string) => {
 };
 
 export const ClientList = () => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<Client[]>(initialClients);
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const { toast } = useToast();
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+  };
+
+  const handleDeleteClient = (clientId: string) => {
+    setClients(prev => prev.filter(client => client.id !== clientId));
+    toast({
+      title: "Cliente removido",
+      description: "Cliente foi excluído do CRM.",
+    });
+  };
+
+  const handleDuplicateClient = (client: Client) => {
+    const duplicated = {
+      ...client,
+      id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()),
+      name: `${client.name} (Cópia)`,
+    };
+    setClients(prev => [...prev, duplicated]);
+    toast({
+      title: "Cliente duplicado",
+      description: `${client.name} foi duplicado no CRM.`,
+    });
+  };
 
   return (
     <div className="p-6">
@@ -175,15 +168,33 @@ export const ClientList = () => {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEditClient(client)}>
+                    <Edit2 className="h-3 w-3 mr-1" />
                     Editar
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled>
                     Gerar Cobrança
                   </Button>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleDuplicateClient(client)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteClient(client.id)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Excluir cliente
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </CardContent>

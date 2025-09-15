@@ -121,8 +121,8 @@ export function NewClientDrawer({ onAdd }: Props) {
       </DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full max-w-3xl">
-          <DrawerHeader>
-            <DrawerTitle>Novo Cliente</DrawerTitle>
+          <DrawerHeader className="pb-8">
+            <DrawerTitle className="text-xl font-semibold">Adição de cliente - CRM</DrawerTitle>
             <DrawerDescription>Preencha as informações para cadastrar no CRM</DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-4">
