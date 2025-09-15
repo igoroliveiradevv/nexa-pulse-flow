@@ -14,7 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          created_at: string
+          description: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          cargo: string | null
+          celular: string | null
+          cep: string | null
+          cidade: string | null
+          cpf_cnpj: string | null
+          created_at: string
+          email: string | null
+          empresa: string | null
+          endereco: string | null
+          estado: string | null
+          id: string
+          instagram: string | null
+          interacoes_anteriores: string | null
+          last_contact: string | null
+          linkedin: string | null
+          nome_razao: string
+          origem_lead: string | null
+          pais: string | null
+          setor_atuacao: string | null
+          status: string | null
+          tamanho_empresa: string | null
+          telefone_fixo: string | null
+          updated_at: string
+          value: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          cargo?: string | null
+          celular?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          email?: string | null
+          empresa?: string | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          instagram?: string | null
+          interacoes_anteriores?: string | null
+          last_contact?: string | null
+          linkedin?: string | null
+          nome_razao: string
+          origem_lead?: string | null
+          pais?: string | null
+          setor_atuacao?: string | null
+          status?: string | null
+          tamanho_empresa?: string | null
+          telefone_fixo?: string | null
+          updated_at?: string
+          value?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          cargo?: string | null
+          celular?: string | null
+          cep?: string | null
+          cidade?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          email?: string | null
+          empresa?: string | null
+          endereco?: string | null
+          estado?: string | null
+          id?: string
+          instagram?: string | null
+          interacoes_anteriores?: string | null
+          last_contact?: string | null
+          linkedin?: string | null
+          nome_razao?: string
+          origem_lead?: string | null
+          pais?: string | null
+          setor_atuacao?: string | null
+          status?: string | null
+          tamanho_empresa?: string | null
+          telefone_fixo?: string | null
+          updated_at?: string
+          value?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

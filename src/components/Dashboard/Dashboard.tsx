@@ -9,12 +9,18 @@ import {
   Calendar,
   Clock
 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Dashboard = () => {
+  const [clientCount, setClientCount] = useState(0);
+  const [recentClients, setRecentClients] = useState<any[]>([]);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+
   const stats = [
     {
       title: "Clientes Ativos",
-      value: "24",
+      value: clientCount.toString(),
       change: "+12%",
       icon: Users,
       color: "text-primary"
@@ -48,11 +54,41 @@ export const Dashboard = () => {
     { id: 3, title: "Setup Google Ads - Novo Cliente", status: "done", dueDate: "Ontem" },
   ];
 
-  const recentClients = [
-    { id: 1, name: "CMYK Impressão Digital", status: "client", value: "R$ 1.700" },
-    { id: 2, name: "Tech Solutions", status: "prospect", value: "R$ 2.500" },
-    { id: 3, name: "Inovação Digital", status: "client", value: "R$ 3.000" },
-  ];
+  // Load dashboard data
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        // Get client count
+        const { count: clientCountData } = await supabase
+          .from('clients')
+          .select('*', { count: 'exact', head: true });
+        
+        setClientCount(clientCountData || 0);
+
+        // Get recent clients
+        const { data: clientsData } = await supabase
+          .from('clients')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        setRecentClients(clientsData || []);
+
+        // Get recent activities
+        const { data: activitiesData } = await supabase
+          .from('activities')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        setRecentActivities(activitiesData || []);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
@@ -135,22 +171,29 @@ export const Dashboard = () => {
             {recentClients.map((client) => (
               <div key={client.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex-1">
-                  <p className="font-medium text-sm">{client.name}</p>
+                  <p className="font-medium text-sm">{client.nome_razao}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge 
                       variant="outline"
                       className={
                         client.status === "client" ? "bg-success/10 text-success border-success/20" :
-                        "bg-primary/10 text-primary border-primary/20"
+                        client.status === "prospect" ? "bg-primary/10 text-primary border-primary/20" :
+                        "bg-warning/10 text-warning border-warning/20"
                       }
                     >
-                      {client.status === "client" ? "Cliente" : "Prospect"}
+                      {client.status === "client" ? "Cliente" : 
+                       client.status === "prospect" ? "Prospect" : "Lead"}
                     </Badge>
-                    <span className="text-sm font-medium text-success">{client.value}</span>
+                    <span className="text-sm font-medium text-success">R$ {client.value?.toLocaleString() || '0'}</span>
                   </div>
                 </div>
               </div>
             ))}
+            {recentClients.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhum cliente cadastrado ainda
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -165,27 +208,32 @@ export const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm font-medium">Novo cliente adicionado: CMYK Impressão Digital</p>
-                <p className="text-xs text-muted-foreground">Há 2 horas</p>
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                <div className={`w-2 h-2 rounded-full mt-2 ${
+                  activity.type === 'client_added' ? 'bg-primary' :
+                  activity.type === 'client_deleted' ? 'bg-destructive' :
+                  activity.type === 'client_updated' ? 'bg-warning' :
+                  'bg-success'
+                }`}></div>
+                <div>
+                  <p className="text-sm font-medium">{activity.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(activity.created_at).toLocaleString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-success rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm font-medium">Tarefa concluída: Setup Google Ads - Novo Cliente</p>
-                <p className="text-xs text-muted-foreground">Há 4 horas</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-muted rounded-lg">
-              <div className="w-2 h-2 bg-warning rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm font-medium">Contrato enviado para assinatura: Tech Solutions</p>
-                <p className="text-xs text-muted-foreground">Há 6 horas</p>
-              </div>
-            </div>
+            ))}
+            {recentActivities.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhuma atividade recente
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/drawer";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const FormSchema = z.object({
   nomeRazao: z.string().min(2, "Informe o nome ou razão social"),
@@ -55,10 +56,11 @@ const FormSchema = z.object({
 export type NewClientFormValues = z.infer<typeof FormSchema>;
 
 type Props = {
-  onAdd: (client: any) => void;
+  onAdd?: (client: any) => void;
+  onClientAdded?: () => void;
 };
 
-export function NewClientDrawer({ onAdd }: Props) {
+export function NewClientDrawer({ onAdd, onClientAdded }: Props) {
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
 
@@ -87,28 +89,85 @@ export function NewClientDrawer({ onAdd }: Props) {
     },
   });
 
-  function onSubmit(values: NewClientFormValues) {
-    const id = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
-    const today = new Date().toISOString().slice(0, 10);
+  async function onSubmit(values: NewClientFormValues) {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
 
-    const newClient = {
-      id,
-      name: values.nomeRazao,
-      company: values.empresa || values.nomeRazao,
-      email: values.email,
-      phone: values.celular || values.whatsapp || values.telefoneFixo || "",
-      status: "lead" as const,
-      value: 0,
-      lastContact: today,
-    };
+      // Insert client into database
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          nome_razao: values.nomeRazao,
+          cpf_cnpj: values.cpfCnpj,
+          endereco: values.endereco,
+          cidade: values.cidade,
+          estado: values.estado,
+          pais: values.pais,
+          cep: values.cep,
+          celular: values.celular,
+          telefone_fixo: values.telefoneFixo,
+          whatsapp: values.whatsapp,
+          email: values.email,
+          linkedin: values.linkedin,
+          instagram: values.instagram,
+          cargo: values.cargo,
+          empresa: values.empresa,
+          setor_atuacao: values.setorAtuacao,
+          tamanho_empresa: values.tamanhoEmpresa,
+          origem_lead: values.origemLead,
+          interacoes_anteriores: values.interacoesAnteriores,
+          status: 'lead',
+          value: 0,
+          last_contact: today,
+        })
+        .select()
+        .single();
 
-    onAdd(newClient);
-    toast({
-      title: "Cliente adicionado",
-      description: `${values.nomeRazao} foi cadastrado no CRM.`,
-    });
-    form.reset();
-    setOpen(false);
+      if (clientError) throw clientError;
+
+      // Add activity to recent activities
+      await supabase
+        .from('activities')
+        .insert({
+          type: 'client_added',
+          entity_type: 'client',
+          entity_id: client.id,
+          description: `Novo cliente adicionado: ${values.nomeRazao}`
+        });
+
+      // Legacy support for older components
+      if (onAdd) {
+        const legacyClient = {
+          id: client.id,
+          name: values.nomeRazao,
+          company: values.empresa || values.nomeRazao,
+          email: values.email,
+          phone: values.celular || values.whatsapp || values.telefoneFixo || "",
+          status: "lead" as const,
+          value: 0,
+          lastContact: today,
+        };
+        onAdd(legacyClient);
+      }
+
+      if (onClientAdded) {
+        onClientAdded();
+      }
+
+      toast({
+        title: "Cliente adicionado",
+        description: `${values.nomeRazao} foi cadastrado no CRM.`,
+      });
+      form.reset();
+      setOpen(false);
+    } catch (error) {
+      console.error('Error adding client:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o cliente. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (
