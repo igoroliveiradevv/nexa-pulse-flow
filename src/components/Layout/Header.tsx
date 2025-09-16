@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Search, Settings, Users } from "lucide-react";
 import nexaLogo from "@/assets/nexa-logo.png";
-
+import { Link } from "react-router-dom";
 export const Header = () => {
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
@@ -31,8 +31,11 @@ export const Header = () => {
           <Settings className="h-5 w-5" />
         </Button>
         
+        <Link to="/auth" className="text-sm text-primary hover:underline">
+          Entrar
+        </Link>
+        
         <Avatar>
-          <AvatarImage src="" alt="User" />
           <AvatarFallback className="bg-primary text-primary-foreground">N</AvatarFallback>
         </Avatar>
       </div>

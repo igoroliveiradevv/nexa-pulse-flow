@@ -27,6 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const FormSchema = z.object({
   nomeRazao: z.string().min(2, "Informe o nome ou razão social"),
@@ -63,6 +64,7 @@ type Props = {
 export function NewClientDrawer({ onAdd, onClientAdded }: Props) {
   const [open, setOpen] = React.useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<NewClientFormValues>({
     resolver: zodResolver(FormSchema),
@@ -91,6 +93,17 @@ export function NewClientDrawer({ onAdd, onClientAdded }: Props) {
 
   async function onSubmit(values: NewClientFormValues) {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Autenticação necessária",
+          description: "Faça login para adicionar clientes ao CRM.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
       const today = new Date().toISOString().slice(0, 10);
 
       // Insert client into database
@@ -174,14 +187,14 @@ export function NewClientDrawer({ onAdd, onClientAdded }: Props) {
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4 mr-2" />
           Novo Cliente
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full max-w-3xl">
           <DrawerHeader className="pb-8">
-            <DrawerTitle className="text-xl font-semibold">Adicionar cliente - CRM</DrawerTitle>
+            <DrawerTitle className="text-2xl md:text-3xl font-bold tracking-tight">Adicionar cliente - CRM</DrawerTitle>
             <DrawerDescription>Preencha as informações para cadastrar no CRM</DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-4">
