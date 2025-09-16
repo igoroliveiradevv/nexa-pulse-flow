@@ -26,14 +26,7 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
 
   return (
     <aside className="w-64 bg-card border-r border-border h-full flex flex-col">
-      <div className="p-4">
-        <Button className="w-full bg-primary hover:bg-primary-hover text-primary-foreground">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Item
-        </Button>
-      </div>
-      
-      <nav className="flex-1 px-4 space-y-1">
+      <nav className="flex-1 px-4 pt-4 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
