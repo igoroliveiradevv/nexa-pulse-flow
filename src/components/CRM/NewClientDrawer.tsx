@@ -164,7 +164,7 @@ export function NewClientDrawer({ onAdd, onClientAdded }: Props) {
       console.error('Error adding client:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível adicionar o cliente. Tente novamente.",
+        description: "Não foi possível adicionar o cliente. Verifique se você está autenticado e tente novamente.",
         variant: "destructive"
       });
     }
@@ -181,7 +181,7 @@ export function NewClientDrawer({ onAdd, onClientAdded }: Props) {
       <DrawerContent>
         <div className="mx-auto w-full max-w-3xl">
           <DrawerHeader className="pb-8">
-            <DrawerTitle className="text-xl font-semibold">Adição de cliente - CRM</DrawerTitle>
+            <DrawerTitle className="text-xl font-semibold">Adicionar cliente - CRM</DrawerTitle>
             <DrawerDescription>Preencha as informações para cadastrar no CRM</DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-4">
